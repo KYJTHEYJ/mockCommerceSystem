@@ -5,7 +5,7 @@ import model.util.ProductFactory;
 import java.util.*;
 
 public class CommerceSystem {
-    Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in);
 
     private int menuStart(List<Category> categoryList) {
         int cmdNumber = 0;

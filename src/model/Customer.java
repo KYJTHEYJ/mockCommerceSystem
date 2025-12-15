@@ -1,7 +1,7 @@
 package model;
 
 public class Customer {
-    String name;
-    String email;
-    String grade;
+    private String name;
+    private String email;
+    private String grade;
 }

@@ -3,8 +3,8 @@ package model;
 import java.util.List;
 
 public class Category {
-    List<Product> productList;
-    String CategoryName;
+    private List<Product> productList;
+    private String CategoryName;
 
     public String getCategoryName() {
         return CategoryName;
