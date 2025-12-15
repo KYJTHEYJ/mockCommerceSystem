@@ -1,3 +1,5 @@
+package model;
+
 public class Product {
     String productName;
     int productPrice;
@@ -12,6 +14,10 @@ public class Product {
     }
 
     public String printInfoButNotQty() {
-        return String.format(" %-15s | %-10d | %s", productName, productPrice, productDescription);
+        return String.format("%-15s | %-10d | %s", productName, productPrice, productDescription);
+    }
+
+    public String printInfo() {
+        return String.format("%s | %d | %s | 재고 : %d개", productName, productPrice, productDescription, productQuantity);
     }
 }
