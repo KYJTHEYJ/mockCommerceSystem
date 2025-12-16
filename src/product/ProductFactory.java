@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ProductFactory {
+    private ProductFactory() {}
+
     public static List<Product> createProductListFromProductInfo(Object[][] productData) {
         List<Product> products = new ArrayList<>();
 

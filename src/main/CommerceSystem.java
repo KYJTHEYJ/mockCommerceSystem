@@ -1,8 +1,8 @@
 package main;
 
 import category.Category;
+import category.CategoryFactory;
 import product.Product;
-import product.ProductFactory;
 
 import java.util.*;
 
@@ -94,9 +94,9 @@ public class CommerceSystem {
         //endregion
 
         //region 카테고리 추가
-        categoryList.add(ProductFactory.initCategory("전자제품", electricProductInfoArr));
-        categoryList.add(ProductFactory.initCategory("의류", clothProductInfoArr));
-        categoryList.add(ProductFactory.initCategory("식품", foodProductInfoArr));
+        categoryList.add(CategoryFactory.initCategory("전자제품", electricProductInfoArr));
+        categoryList.add(CategoryFactory.initCategory("의류", clothProductInfoArr));
+        categoryList.add(CategoryFactory.initCategory("식품", foodProductInfoArr));
         //endregion
 
         //region 메뉴 출력 및 입력
