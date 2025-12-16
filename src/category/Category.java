@@ -5,8 +5,8 @@ import product.Product;
 import java.util.List;
 
 public class Category {
-    private List<Product> productList;
-    private String CategoryName;
+    private final String CategoryName;
+    private final List<Product> productList;
 
     public String getCategoryName() {
         return CategoryName;

@@ -1,10 +1,8 @@
 package main.system;
 
 import category.Category;
-import category.CategoryFactory;
 import main.system.action.SelectActionResult;
 import product.Product;
-import product.ProductFactory;
 
 import java.util.*;
 
@@ -23,6 +21,8 @@ public class CommerceSystem {
         }
 
         consoleStrBuilder.append("0.").append(String.format(" %-15s | %-10s", "exit", "프로그램 종료"));
+
+
         System.out.println(consoleStrBuilder);
     }
 
@@ -101,26 +101,25 @@ public class CommerceSystem {
         List<Category> categoryList = new ArrayList<>();
 
         //region 전자 카테고리별 상품
-        Object[][] electricProductInfoArr = {
-                {"Galaxy S26", 1170000, "최신 Android 스마트폰", 100}
-                , {"iPhone 18", 1300000, "최신 IOS 스마트폰", 100}
-                , {"MacBook Pro", 1800000, "최신 MacBook Pro", 100}
-                , {"MacBook Air", 1250000, "최신 MacBook Air", 100}
-        };
+        List<Product> electricProductList = new ArrayList<>();
+        electricProductList.add(new Product("Galaxy S26", 117000, "최신 Android 스마트폰", 100));
+        electricProductList.add(new Product("iPhone 18", 130000, "최신 IOS 스마트폰", 100));
+        electricProductList.add(new Product("MacBook Pro", 180000, "최신 MacBook Pro", 100));
+        electricProductList.add(new Product("MacBook Air", 125000, "최신 MacBook Air", 100));
         //endregion
 
         //region 의류 카테고리별 상품
-        Object[][] clothProductInfoArr = {};
+        List<Product> clothProductList = new ArrayList<>();
         //endregion
 
         //region 식품 카테고리별 상품
-        Object[][] foodProductInfoArr = {};
+        List<Product> foodProductList = new ArrayList<>();
         //endregion
 
         //region 카테고리 추가
-        categoryList.add(CategoryFactory.initCategory("전자제품", ProductFactory.createProductListFromProductInfo(electricProductInfoArr)));
-        categoryList.add(CategoryFactory.initCategory("의류", ProductFactory.createProductListFromProductInfo(clothProductInfoArr)));
-        categoryList.add(CategoryFactory.initCategory("식품", ProductFactory.createProductListFromProductInfo(foodProductInfoArr)));
+        categoryList.add(new Category("전자제품", electricProductList));
+        categoryList.add(new Category("의류", clothProductList));
+        categoryList.add(new Category("식품", foodProductList));
         //endregion
 
         //region 메뉴 출력 및 입력
