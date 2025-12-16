@@ -10,19 +10,19 @@ public enum Grade {
     , SILVER(5) {
         @Override
         public int discountPrice(int price) {
-            return (int) (price * 0.05);
+            return (int) (price * (discountRate * 0.01));
         }
     }
     , GOLD(10) {
         @Override
         public int discountPrice(int price) {
-            return (int) (price * 0.1);
+            return (int) (price * (discountRate * 0.01));
         }
     }
     , PLANTINUM(15) {
         @Override
         public int discountPrice(int price) {
-            return (int) (price * 0.15);
+            return (int) (price * (discountRate * 0.01));
         }
     };
 
