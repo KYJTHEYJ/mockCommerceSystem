@@ -1,7 +1,4 @@
-package model.util;
-
-import model.Category;
-import model.Product;
+package product;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +17,5 @@ public final class ProductFactory {
         }
 
         return products;
-    }
-
-    public static Category initCategory(String category, Object[][] productData) {
-        return new Category(category, createProductListFromProductInfo(productData));
     }
 }

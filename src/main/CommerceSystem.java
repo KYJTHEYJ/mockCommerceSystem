@@ -1,6 +1,8 @@
-import model.Category;
-import model.Product;
-import model.util.ProductFactory;
+package main;
+
+import category.Category;
+import product.Product;
+import product.ProductFactory;
 
 import java.util.*;
 
@@ -110,9 +112,7 @@ public class CommerceSystem {
 
             selectItem = categoryStart(categoryList, selectMenuOrCategory);
 
-            if (selectItem == -1) {
-                continue;
-            } else {
+            if (selectItem != -1) {
                 System.out.print("선택한 상품 : ");
                 System.out.println(categoryList.get(selectMenuOrCategory-1).getProductList().get(selectItem-1).printInfo());
             }
