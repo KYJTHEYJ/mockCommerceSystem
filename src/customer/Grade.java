@@ -1,30 +1,13 @@
 package customer;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public enum Grade {
-    BRONZE(0) {
-        @Override
-        public int discountPrice(int price) {
-            return price;
-        }
-    }
-    , SILVER(5) {
-        @Override
-        public int discountPrice(int price) {
-            return (int) (price * (discountRate * 0.01));
-        }
-    }
-    , GOLD(10) {
-        @Override
-        public int discountPrice(int price) {
-            return (int) (price * (discountRate * 0.01));
-        }
-    }
-    , PLANTINUM(15) {
-        @Override
-        public int discountPrice(int price) {
-            return (int) (price * (discountRate * 0.01));
-        }
-    };
+    BRONZE(0)
+    , SILVER(5)
+    , GOLD(10)
+    , PLATINUM(15);
 
     public final int discountRate;
 
@@ -32,5 +15,15 @@ public enum Grade {
         this.discountRate = discountRate;
     }
 
-    public abstract int discountPrice(int price);
+    // 할인 가격을 출력
+    public int getDiscountPrice(int price) {
+        return BigDecimal.valueOf(price)
+                .multiply(BigDecimal.valueOf(this.discountRate))
+                .divide(BigDecimal.valueOf(100), 0, RoundingMode.DOWN).intValue();
+    }
+
+    // 최종 할인 가격 (혹시 모를 100% 넘는 할인시 0 출력)
+    public int getDiscountedPrice(int price) {
+        return Math.max(0, price - getDiscountPrice(price));
+    }
 }

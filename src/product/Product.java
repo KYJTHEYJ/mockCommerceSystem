@@ -1,7 +1,7 @@
 package product;
 
 public class Product {
-    /// productName은 유니크
+    /// ProductName은 유니크
     private final String productName;
     private final int productPrice;
     private final String productDescription;
