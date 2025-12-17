@@ -1,6 +1,7 @@
 package main.system;
 
 import category.Category;
+import customer.Customer;
 import main.system.action.SelectActionResult;
 import product.Product;
 
@@ -9,7 +10,12 @@ import java.util.*;
 import static main.system.action.Actions.*;
 
 public class CommerceSystem {
+    private final Customer customer;
     private final Scanner scanner = new Scanner(System.in);
+
+    public CommerceSystem(Customer customer) {
+        this.customer = customer;
+    }
 
     private void menuDisplay(List<Category> categoryList) {
         StringBuilder consoleStrBuilder = new StringBuilder();
@@ -46,11 +52,11 @@ public class CommerceSystem {
                 return SelectActionResult.selected(selectNum);
             }
         } catch (IndexOutOfBoundsException e) {
-            return SelectActionResult.error("없는 번호를 입력하셨습니다");
+            return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
         } catch (InputMismatchException e) {
-            return SelectActionResult.error("메뉴 번호에 맞는 숫자를 입력해주세요");
+            return SelectActionResult.error("메뉴 번호에 맞는 숫자를 입력해주세요\n");
         } catch (Exception e) {
-            return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage());
+            return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
         }
     }
 
@@ -89,11 +95,55 @@ public class CommerceSystem {
                 return SelectActionResult.selected(selectNum);
             }
         } catch (IndexOutOfBoundsException e) {
-            return SelectActionResult.error("없는 번호를 입력하셨습니다");
+            return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
         } catch (InputMismatchException e) {
-            return SelectActionResult.error("메뉴 번호에 맞는 숫자를 입력해주세요");
+            return SelectActionResult.error("메뉴 번호에 맞는 숫자를 입력해주세요\n");
         } catch (Exception e) {
-            return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage());
+            return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
+        }
+    }
+
+    private void addShoppingCartDisplay(Product product) {
+        String consoleStrBuilder = "선택한 상품 : "
+                                   + product.printInfo() + "\n\n"
+                                   + product.printInfoForAddShoppingCart() + "\n"
+                                   + "위 상품을 장바구니에 추가하시겠습니까?\n"
+                                   + "1. 확인\n" + "2. 취소\n";
+
+        System.out.println(consoleStrBuilder);
+    }
+
+    private SelectActionResult addShoppingCartStart(Product product) {
+        int selectNum;
+
+        try {
+            addShoppingCartDisplay(product);
+
+            System.out.print("메뉴 번호를 입력해주세요 : ");
+            selectNum = scanner.nextInt();
+            scanner.nextLine();
+
+            if (selectNum == 2) {
+                return SelectActionResult.exit();
+            }
+
+            if (selectNum != 1) {
+                throw new IndexOutOfBoundsException();
+            } else {
+                if(product.getProductQuantity() < 0) {
+                    customer.getShoppingCart().addProductToCart(product);
+                    System.out.print(product.getProductName() + "이(가) 장바구니에 추가되었습니다\n");
+                    return SelectActionResult.selected(selectNum);
+                } else {
+                    return SelectActionResult.soldOut(product.getProductName() + " 상품의 재고가 없습니다!\n");
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
+        } catch (InputMismatchException e) {
+            return SelectActionResult.error("메뉴 번호에 맞는 숫자를 입력해주세요\n");
+        } catch (Exception e) {
+            return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
         }
     }
 
@@ -122,11 +172,22 @@ public class CommerceSystem {
         categoryList.add(new Category("식품", foodProductList));
         //endregion
 
+        //region 장바구니 관련 카테고리 추가
+        if(!customer.getShoppingCart().getShoppingCartProductList().isEmpty()) {
+            categoryList.add(new Category("장바구니 확인", customer.getShoppingCart().getShoppingCartProductList()));
+            categoryList.add(new Category("주문 취소", customer.getShoppingCart().getShoppingCartProductList()));
+        }
+
         //region 메뉴 출력 및 입력
         SelectActionResult menu;
         SelectActionResult category;
+        SelectActionResult shoppingCart;
+        Product selectedProduct;
 
+        // 메뉴 시작 -> 카테고리 보여주기 -> 상품 선택시 쇼핑카트 보여주기
         while (true) {
+            System.out.println(customer.getName() + "님, 환영합니다!\n");
+
             menu = menuStart(categoryList);
 
             if (menu.getAction().equals(EXIT)) {
@@ -143,15 +204,20 @@ public class CommerceSystem {
                         System.out.println(category.getMessage());
                     }
                     case SELECTED -> {
-                        try {
-                            System.out.print("선택한 상품 : ");
-                            System.out.println(categoryList.get(menu.getSelectIndex()).getProductList().get(category.getSelectIndex()).printInfo());
-                        } catch (IndexOutOfBoundsException e) {
-                            System.out.println(category.getMessage());
-                        }
+                        selectedProduct = categoryList.get(menu.getSelectIndex()).getProductList().get(category.getSelectIndex());
+
+                        do {
+                            shoppingCart = addShoppingCartStart(selectedProduct);
+
+                            if (shoppingCart.getAction().equals(ERROR)) {
+                                System.out.println(shoppingCart.getMessage());
+                            } else if (shoppingCart.getAction().equals(SOLDOUT)) {
+                                System.out.println(shoppingCart.getMessage());
+                            }
+                        } while (shoppingCart.getAction().equals(ERROR));
                     }
                 }
-            } while (category.getAction().equals(ERROR));
+            } while (!category.getAction().equals(EXIT));
         }
 
         System.out.println("커머스 프로그램을 종료합니다");

@@ -4,4 +4,5 @@ public enum Actions {
     SELECTED
     , ERROR
     , EXIT
+    , SOLDOUT
 }

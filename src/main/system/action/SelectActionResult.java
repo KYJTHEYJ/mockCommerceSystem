@@ -54,4 +54,8 @@ public class SelectActionResult {
     public static SelectActionResult exit() {
         return new SelectActionResult(Actions.EXIT);
     }
+
+    public static SelectActionResult soldOut(String message) {
+        return new SelectActionResult(Actions.SOLDOUT, message);
+    }
 }
