@@ -33,6 +33,7 @@ public class Customer {
     public ShoppingCart getShoppingCart() {
         return shoppingCart;
     }
+
     public Order getOrder() {
         return order;
     }
