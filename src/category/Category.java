@@ -46,8 +46,8 @@ public class Category {
         return new Category(CategoryType.COMMAND, categoryName, categoryDescription, null, menu);
     }
 
-    // 싱품 나열이 아닌 카테고리는 메뉴 구조 수행이 필요, Consumer 인터페이스 사용하여 내부 기능 호출
-    public void menuExecute(CommerceSystem commerceSystem) {
+    // 싱품 나열이 아닌 카테고리는 카테고리-내부 메뉴 형태로 수행이 필요, Consumer 인터페이스 사용하여 내부 기능 호출
+    public void commandCategoryMenuExecute(CommerceSystem commerceSystem) {
         menu.accept(commerceSystem);
     }
 }

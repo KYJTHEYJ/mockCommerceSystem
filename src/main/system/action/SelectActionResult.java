@@ -58,4 +58,8 @@ public class SelectActionResult {
     public static SelectActionResult soldOut(String message) {
         return new SelectActionResult(Actions.SOLDOUT, message);
     }
+
+    public static SelectActionResult loop() {
+        return new SelectActionResult(Actions.LOOP);
+    }
 }

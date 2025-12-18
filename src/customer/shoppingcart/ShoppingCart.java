@@ -6,12 +6,14 @@ import product.OrderingProduct;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ShoppingCart {
     // 주문하려는 상품, 수량
-    private final List<OrderingProduct> shoppingCartList = new ArrayList<>();
+    private List<OrderingProduct> shoppingCartList = new ArrayList<>();
 
-    public ShoppingCart() {}
+    public ShoppingCart() {
+    }
 
     public List<OrderingProduct> getOrderingProductList() {
         return shoppingCartList;
@@ -34,8 +36,8 @@ public class ShoppingCart {
             sumPrice += (customer.getGrade()
                                  .getDiscountedPrice(
                                          OrderingProduct
-                                         .getProduct()
-                                         .getProductPrice()
+                                                 .getProduct()
+                                                 .getProductPrice()
                                  ) * OrderingProduct.getQuantity());
         }
 
@@ -51,14 +53,19 @@ public class ShoppingCart {
         List<String> productNameListInCart = shoppingCartList.stream()
                 .map(OrderingProduct -> OrderingProduct.getProduct().getProductName()).toList();
 
-        if(!productNameListInCart.contains(product.getProductName())) {
+        if (!productNameListInCart.contains(product.getProductName())) {
             shoppingCartList.add(new OrderingProduct(product, 1));
         } else {
-           for(OrderingProduct OrderingProduct : shoppingCartList) {
-               if(OrderingProduct.getProduct().getProductName().equals(product.getProductName())) {
-                   OrderingProduct.setQuantity(OrderingProduct.getQuantity() + 1);
-               }
-           }
+            for (OrderingProduct OrderingProduct : shoppingCartList) {
+                if (OrderingProduct.getProduct().getProductName().equals(product.getProductName())) {
+                    OrderingProduct.setQuantity(OrderingProduct.getQuantity() + 1);
+                }
+            }
         }
+    }
+
+    public boolean removeProductToCartUsingProductName(String productName) {
+        // 이름으로 찾아 상품 제거하기
+        return shoppingCartList.removeIf(OrderingProduct -> OrderingProduct.getProduct().getProductName().equals(productName));
     }
 }

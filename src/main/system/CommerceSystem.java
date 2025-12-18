@@ -7,8 +7,10 @@ import product.OrderingProduct;
 import main.system.action.SelectActionResult;
 import product.Product;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static category.Category.createCommandCategory;
 import static category.Category.createProductCategory;
@@ -41,7 +43,7 @@ public class CommerceSystem {
     //region 메뉴 생성 관련
     public int printCategory(List<Category> categoryList, StringBuilder consoleStrBuilder, int index) {
         for (Category category : categoryList) {
-            if(!category.getCategoryDescription().isEmpty()) {
+            if (!category.getCategoryDescription().isEmpty()) {
                 consoleStrBuilder.append(index).append(". ").append(String.format(" %-15s | %-10s", category.getCategoryName(), category.getCategoryDescription())).append("\n");
             } else {
                 consoleStrBuilder.append(index).append(". ").append(String.format(" %-15s", category.getCategoryName())).append("\n");
@@ -99,18 +101,63 @@ public class CommerceSystem {
         } catch (IndexOutOfBoundsException e) {
             return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
         } catch (InputMismatchException e) {
-            return SelectActionResult.error("메뉴 번호에 맞는 숫자를 입력해주세요\n");
+            scanner.nextLine();
+            return SelectActionResult.error("메뉴에 올바른 숫자를 입력해주세요\n");
         } catch (Exception e) {
             return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
         }
     }
 
-    private void categoryDisplay(Category category) {
+    private void categoryPreDisplay(Category category) {
+        String consoleStrBuilder = String.format("\n[ %s 카테고리 ]\n", category.getCategoryName()) +
+                                   "1. 전체 상품 보기\n" +
+                                   "2. 가격 설정 후 가격 이상 상품 보기\n" +
+                                   "3. 가격 설정 후 가격 이하 상품 보기\n" +
+                                   "0." + String.format(" %-15s | %-10s", "back", "뒤로가기");
+
+        System.out.println(consoleStrBuilder);
+    }
+
+    private SelectActionResult categoryPreProcess(Category category) {
+        int selectNum;
+
+        try {
+            categoryPreDisplay(category);
+
+            System.out.print("메뉴 번호를 입력해주세요 : ");
+            selectNum = scanner.nextInt();
+            scanner.nextLine();
+
+            return switch (selectNum) {
+                case 1, 2, 3 -> SelectActionResult.selected(selectNum);
+                case 0 -> SelectActionResult.exit();
+                default -> throw new IndexOutOfBoundsException();
+            };
+
+        } catch (IndexOutOfBoundsException e) {
+            return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
+        } catch (InputMismatchException e) {
+            scanner.nextLine();
+            return SelectActionResult.error("메뉴에 올바른 숫자를 입력해주세요\n");
+        } catch (Exception e) {
+            return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
+        }
+    }
+
+    private void categoryDisplay(Category category, Predicate<Product> pricePredicate) {
         StringBuilder consoleStrBuilder = new StringBuilder();
+        List<Product> filteredProductList;
         consoleStrBuilder.append(String.format("\n[ %s 카테고리 ]\n", category.getCategoryName()));
+
         int index = 1;
 
-        for (Product product : category.getProductList()) {
+        if (pricePredicate == null) {
+            filteredProductList = category.getProductList();
+        } else {
+            filteredProductList = category.getProductList().stream().filter(pricePredicate).toList();
+        }
+
+        for (Product product : filteredProductList) {
             consoleStrBuilder.append(index).append(". ").append(product.printInfoButNotQty()).append("\n");
             index++;
         }
@@ -122,27 +169,67 @@ public class CommerceSystem {
 
     private SelectActionResult categoryProcess(Category category) {
         int selectNum;
+        Predicate<Product> pricePredicate = null;
+        List<Product> filteredProductList;
+        BigDecimal inputPrice;
+        SelectActionResult result;
 
         try {
-            categoryDisplay(category);
+            result = categoryPreProcess(category);
 
-            System.out.print("메뉴 번호를 입력해주세요 : ");
-            selectNum = scanner.nextInt();
-            scanner.nextLine();
+            if (result.getAction().equals(SELECTED)) {
+                switch (result.getSelectNumber()) {
+                    case 1 -> {
+                        // 기본 출력
+                        filteredProductList = category.getProductList();
+                    }
+                    case 2 -> {
+                        System.out.print("이상 조회의 기준이 될 가격을 입력해주세요 : ");
+                        inputPrice = scanner.nextBigDecimal();
+                        scanner.nextLine();
 
-            if (selectNum == 0) {
-                return SelectActionResult.exit();
-            }
+                        // 입력 받은 가격 이상 조회
+                        pricePredicate = product -> BigDecimal.valueOf(product.getProductPrice()).compareTo(inputPrice) >= 0;
+                        filteredProductList = category.getProductList().stream().filter(pricePredicate).toList();
+                    }
+                    case 3 -> {
+                        System.out.print("이하 조회의 기준이 될 가격을 입력해주세요 : ");
+                        inputPrice = scanner.nextBigDecimal();
+                        scanner.nextLine();
 
-            if (selectNum < 0 || selectNum > category.getProductList().size()) {
-                throw new IndexOutOfBoundsException();
+                        // 입력 받은 가격 이하 조회
+                        pricePredicate = product -> BigDecimal.valueOf(product.getProductPrice()).compareTo(inputPrice) <= 0;
+                        filteredProductList = category.getProductList().stream().filter(pricePredicate).toList();
+                    }
+                    default -> throw new IllegalStateException();
+                }
+
+                categoryDisplay(category, pricePredicate);
+
+                System.out.print("메뉴 번호를 입력해주세요 : ");
+                selectNum = scanner.nextInt();
+                scanner.nextLine();
+
+                if (selectNum == 0) {
+                    return SelectActionResult.exit();
+                }
+
+                if (selectNum < 0 || selectNum > filteredProductList.size()) {
+                    throw new IndexOutOfBoundsException();
+                } else {
+                    Product selectProduct = filteredProductList.get(selectNum - 1);
+                    return SelectActionResult.selected(category.getProductList().indexOf(selectProduct));
+                }
             } else {
-                return SelectActionResult.selected(selectNum);
+                return result;
             }
         } catch (IndexOutOfBoundsException e) {
             return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
         } catch (InputMismatchException e) {
-            return SelectActionResult.error("메뉴 번호에 맞는 숫자를 입력해주세요\n");
+            scanner.nextLine();
+            return SelectActionResult.error("메뉴에 올바른 숫자를 입력해주세요\n");
+        } catch (IllegalStateException e) {
+            return SelectActionResult.error("이전 수행에 오류가 있습니다, 다시 수행해주세요\n");
         } catch (Exception e) {
             return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
         }
@@ -159,7 +246,7 @@ public class CommerceSystem {
                     System.out.println(result.getMessage());
                 }
                 case SELECTED -> {
-                    addProductShoppingCartStart(category.getProductList().get(result.getSelectIndex()));
+                    addProductShoppingCartStart(category.getProductList().get(result.getSelectNumber()));
                 }
             }
         } while (!result.getAction().equals(EXIT));
@@ -206,7 +293,8 @@ public class CommerceSystem {
         } catch (IndexOutOfBoundsException e) {
             return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
         } catch (InputMismatchException e) {
-            return SelectActionResult.error("메뉴 번호에 맞는 숫자를 입력해주세요\n");
+            scanner.nextLine();
+            return SelectActionResult.error("메뉴에 올바른 숫자를 입력해주세요\n");
         } catch (Exception e) {
             return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
         }
@@ -284,7 +372,7 @@ public class CommerceSystem {
                     product.setProductQuantity(product.getProductQuantity() - OrderingProduct.getQuantity());
                 }
 
-                // 주문 했으니 장바구니 안 비우기
+                // 주문 했으니 장바구니 비우기
                 customer.getShoppingCart().getOrderingProductList().clear();
 
                 return SelectActionResult.selected(selectNum);
@@ -292,7 +380,8 @@ public class CommerceSystem {
         } catch (IndexOutOfBoundsException e) {
             return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
         } catch (InputMismatchException e) {
-            return SelectActionResult.error("메뉴 번호에 맞는 숫자를 입력해주세요\n");
+            scanner.nextLine();
+            return SelectActionResult.error("메뉴에 올바른 숫자를 입력해주세요\n");
         } catch (Exception e) {
             return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
         }
@@ -309,9 +398,78 @@ public class CommerceSystem {
         } while (!result.getAction().equals(SELECTED) && !result.getAction().equals(EXIT));
     }
 
-    private void shoppingCartClear() {
-        System.out.println("장바구니 안 주문들을 전부 취소하였습니다!\n");
-        customer.getShoppingCart().getOrderingProductList().clear();
+    private void shoppingCartClearDisplay() {
+        StringBuilder consoleStrBuilder = new StringBuilder();
+        consoleStrBuilder.append("\n[ 장바구니 내역 ]\n");
+
+        for (OrderingProduct OrderingProduct : customer.getShoppingCart().getOrderingProductList()) {
+            consoleStrBuilder.append(OrderingProduct.printOrderingCart()).append("\n");
+        }
+
+        consoleStrBuilder.append("1. 상품 취소\n")
+                .append("2. 전체 상품 취소\n")
+                .append("3. 메인으로 돌아가기\n");
+
+        System.out.println(consoleStrBuilder);
+    }
+
+    private SelectActionResult shoppingCartClearProcess() {
+        int selectNum;
+
+        try {
+            shoppingCartClearDisplay();
+
+            System.out.print("메뉴 번호를 입력해주세요 : ");
+            selectNum = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (selectNum) {
+                case 1 -> {
+                    System.out.print("취소할 상품 이름을 입력해주세요 : ");
+                    String productName = scanner.nextLine();
+
+                    if (customer.getShoppingCart().removeProductToCartUsingProductName(productName)) {
+                        System.out.println("< " + productName + " > 상품을 취소하였습니다");
+
+                        if (customer.getShoppingCart().getOrderingProductList().isEmpty()) {
+                            return SelectActionResult.exit();
+                        } else {
+                            return SelectActionResult.loop();
+                        }
+                    } else {
+                        System.out.println("< " + productName + " > 상품은 장바구니에 없습니다!");
+                        return SelectActionResult.exit();
+                    }
+                }
+                case 2 -> {
+                    System.out.println("장바구니 안 주문들을 전부 취소하였습니다!\n");
+                    customer.getShoppingCart().getOrderingProductList().clear();
+                    return SelectActionResult.exit();
+                }
+                case 3 -> {
+                    return SelectActionResult.exit();
+                }
+                default -> throw new IndexOutOfBoundsException();
+            }
+        } catch (IndexOutOfBoundsException e) {
+            return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
+        } catch (InputMismatchException e) {
+            scanner.nextLine();
+            return SelectActionResult.error("메뉴에 올바른 숫자로 입력해주세요\n");
+        } catch (Exception e) {
+            return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
+        }
+    }
+
+    private void shoppingCartClearStart() {
+        SelectActionResult result;
+        do {
+            result = shoppingCartClearProcess();
+
+            if (result.getAction().equals(ERROR)) {
+                System.out.println(result.getMessage());
+            }
+        } while (!result.getAction().equals(EXIT));
     }
     //endregion
 
@@ -328,7 +486,7 @@ public class CommerceSystem {
         //region 장바구니 관련 카테고리 추가
         if (!customer.getShoppingCart().getOrderingProductList().isEmpty()) {
             categoryList.add(createCommandCategory("장바구니 확인", "장바구니를 확인 후 주문합니다", menu -> shoppingCartToOrderStart()));
-            categoryList.add(createCommandCategory("주문 취소", "진행 중인 주문을 취소합니다 (장바구니에 담긴 것들을 비웁니다)", menu -> shoppingCartClear()));
+            categoryList.add(createCommandCategory("주문 취소", "주문 대기 중인 상품을 취소합니다", menu -> shoppingCartClearStart()));
         }
         //endregion
 
@@ -339,7 +497,6 @@ public class CommerceSystem {
     public void start() {
         //region 메뉴 출력 및 입력
         SelectActionResult menu;
-        Product selectedProduct;
 
         // 메뉴 시작 -> 카테고리 보여주기 -> 상품 선택시 쇼핑카트 보여주기
         while (true) {
@@ -360,7 +517,7 @@ public class CommerceSystem {
 
             switch (selectedCategory.getCategoryType()) {
                 case PRODUCT -> categoryStart(selectedCategory);
-                case COMMAND -> selectedCategory.menuExecute(CommerceSystem.this);
+                case COMMAND -> selectedCategory.commandCategoryMenuExecute(CommerceSystem.this);
             }
         }
 
