@@ -3,6 +3,7 @@ package main.system;
 import category.Category;
 import category.CategoryType;
 import customer.Customer;
+import main.system.process.ProductProcess;
 import product.OrderingProduct;
 import main.system.action.SelectActionResult;
 import product.Product;
@@ -12,32 +13,19 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static category.Category.createCommandCategory;
-import static category.Category.createProductCategory;
+import static category.Category.*;
 import static main.system.action.Actions.*;
 
+//TODO 메서드 분리 진행 필요
 public class CommerceSystem {
     private final Customer customer;
     private final Scanner scanner = new Scanner(System.in);
 
-    //region 상품 카테고리 초기 설정 관련
-    // 생성할 카테고리
-    List<Product> electricProductList = new ArrayList<>();
-    List<Product> clothProductList = new ArrayList<>();
-    List<Product> foodProductList = new ArrayList<>();
-
-    // 상품 카테고리 초기 설정
-    private void initProductsInCategories() {
-        electricProductList.add(new Product("Galaxy S26", 1170000, "최신 Android 스마트폰", 100));
-        electricProductList.add(new Product("iPhone 18", 1300000, "최신 IOS 스마트폰", 100));
-        electricProductList.add(new Product("MacBook Pro", 1800000, "최신 MacBook Pro", 100));
-        electricProductList.add(new Product("MacBook Air", 1250000, "최신 MacBook Air", 100));
-    }
-    //endregion
+    private final ProductProcess productProcess;
 
     public CommerceSystem(Customer customer) {
         this.customer = customer;
-        initProductsInCategories();
+        productProcess = new ProductProcess();
     }
 
     //region 메뉴 및 카테고리 생성 관련
@@ -56,7 +44,8 @@ public class CommerceSystem {
 
     private void menuDisplay(List<Category> categoryList) {
         List<Category> productCategoryList = categoryList.stream().filter(category -> category.getCategoryType().equals(CategoryType.PRODUCT)).toList();
-        List<Category> shoppingCartCategoryList = categoryList.stream().filter(category -> category.getCategoryType().equals(CategoryType.COMMAND)).toList();
+        List<Category> orderManageList = categoryList.stream().filter(category -> category.getCategoryType().equals(CategoryType.ORDER)).toList();
+        List<Category> adminList = categoryList.stream().filter(category -> category.getCategoryType().equals(CategoryType.ADMIN)).toList();
         StringBuilder consoleStrBuilder = new StringBuilder();
 
         // 메인 메뉴 디스플레이
@@ -66,13 +55,18 @@ public class CommerceSystem {
 
         consoleStrBuilder.append("0.").append(String.format(" %-15s | %-10s", "exit", "프로그램 종료")).append("\n");
 
-        // 주문 관련 쪽 디스플레이
-        if (!shoppingCartCategoryList.isEmpty()) {
+        // 관리자 기능 디스플레이
+        if (!adminList.isEmpty()) {
+            index = printCategory(adminList, consoleStrBuilder, index);
+        }
+
+        // 주문 관련 디스플레이
+        if (!orderManageList.isEmpty()) {
             consoleStrBuilder.append("\n[ 주문 관리 ]\n");
         }
 
-        if (!shoppingCartCategoryList.isEmpty()) {
-            index = printCategory(shoppingCartCategoryList, consoleStrBuilder, index);
+        if (!orderManageList.isEmpty()) {
+            index = printCategory(orderManageList, consoleStrBuilder, index);
         }
         //endregion
 
@@ -253,7 +247,7 @@ public class CommerceSystem {
     }
     //endregion
 
-    //region 쇼핑카트 상품 추가 기능 관련
+    //region 장바구니 상품 추가 기능 관련
     private void addProductShoppingCartDisplay(Product product) {
         String consoleStrBuilder = "선택한 상품 : "
                                    + product.printInfo() + "\n\n"
@@ -312,7 +306,7 @@ public class CommerceSystem {
     }
     //endregion
 
-    //region 쇼핑카트 상품 주문 관련
+    //region 장바구니 상품 주문 관련
     private void shoppingCartToOrderDisplay() {
         StringBuilder consoleStrBuilder = new StringBuilder();
         consoleStrBuilder.append("\n[ 장바구니 내역 주문하기 ]\n");
@@ -349,32 +343,32 @@ public class CommerceSystem {
             selectNum = scanner.nextInt();
             scanner.nextLine();
 
-            if (selectNum == 2) {
-                return SelectActionResult.exit();
-            }
+            switch (selectNum) {
+                case 1 -> {
+                    System.out.println("주문이 완료 되었습니다!\n < 결제 금액 > " + new DecimalFormat("###,###")
+                            .format(customer.getShoppingCart().getShoppingCartSumPrice(customer)) + "원\n");
 
-            if (selectNum != 1) {
-                throw new IndexOutOfBoundsException();
-            } else {
-                System.out.println("주문이 완료 되었습니다!\n < 결제 금액 > " + new DecimalFormat("###,###")
-                        .format(customer.getShoppingCart().getShoppingCartSumPrice(customer)) + "원\n");
+                    for (OrderingProduct OrderingProduct : customer.getShoppingCart().getOrderingProductList()) {
+                        Product product = OrderingProduct.getProduct();
 
-                for (OrderingProduct OrderingProduct : customer.getShoppingCart().getOrderingProductList()) {
-                    Product product = OrderingProduct.getProduct();
+                        /*
+                        System.out.printf(String.format("%s 재고가 %d -> %d 개로 업데이트 됩니다\n"
+                                , product.getProductName()
+                                , product.getProductQuantity()
+                                , product.getProductQuantity() - OrderingProduct.getQuantity()));
+                        */
+                        product.setProductQuantity(product.getProductQuantity() - OrderingProduct.getQuantity());
+                    }
 
-                   /*
-                   System.out.printf(String.format("%s 재고가 %d -> %d 개로 업데이트 됩니다\n"
-                           , product.getProductName()
-                           , product.getProductQuantity()
-                           , product.getProductQuantity() - OrderingProduct.getQuantity()));
-                   */
-                    product.setProductQuantity(product.getProductQuantity() - OrderingProduct.getQuantity());
+                    // 주문 했으니 장바구니 비우기
+                    customer.getShoppingCart().getOrderingProductList().clear();
+
+                    return SelectActionResult.selected(selectNum);
                 }
-
-                // 주문 했으니 장바구니 비우기
-                customer.getShoppingCart().getOrderingProductList().clear();
-
-                return SelectActionResult.selected(selectNum);
+                case 2 -> {
+                    return SelectActionResult.exit();
+                }
+                default -> throw new IndexOutOfBoundsException();
             }
         } catch (IndexOutOfBoundsException e) {
             return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
@@ -472,21 +466,87 @@ public class CommerceSystem {
     }
     //endregion
 
+    //region 관리자 기능 관련
+    private void adminDisplay() {
+        StringBuilder consoleStrBuilder = new StringBuilder();
+        consoleStrBuilder.append("\n[ 관리자 모드 ]\n");
+
+        consoleStrBuilder.append("1. 상품 추가\n")
+                .append("2. 상품 수정\n")
+                .append("3. 상품 삭제\n")
+                .append("4. 전체 상품 현황\n");
+        consoleStrBuilder.append("0.").append(String.format(" %-15s | %-10s", "exit", "프로그램 종료")).append("\n");
+
+        System.out.println(consoleStrBuilder);
+    }
+
+    private SelectActionResult adminProcess() {
+        /*
+        int selectNum;
+
+        try {
+            adminDisplay();
+
+            System.out.print("메뉴 번호를 입력해주세요 : ");
+            selectNum = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (selectNum) {
+                case 1 -> {
+
+                }
+                case 2 -> {
+
+                }
+                case 3 -> {
+
+                }
+                default -> throw new IndexOutOfBoundsException();
+            }
+        } catch (IndexOutOfBoundsException e) {
+            return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
+        } catch (InputMismatchException e) {
+            scanner.nextLine();
+            return SelectActionResult.error("메뉴에 올바른 숫자로 입력해주세요\n");
+        } catch (Exception e) {
+            return SelectActionResult.error("오류 발생 : " + e.getLocalizedMessage() + "\n");
+        }
+        */
+
+        return SelectActionResult.exit();
+    }
+
+    private void adminStart() {
+        SelectActionResult result;
+        do {
+            result = shoppingCartClearProcess();
+
+            if (result.getAction().equals(ERROR)) {
+                System.out.println(result.getMessage());
+            }
+        } while (!result.getAction().equals(EXIT));
+    }
+    //endregion
+
     //region "카테고리 총합"
     private List<Category> buildCategoryList() {
         List<Category> categoryList = new ArrayList<>();
 
         //region 상품 관련 카테고리 추가
-        categoryList.add(createProductCategory("전자제품", "", electricProductList));
-        categoryList.add(createProductCategory("의류", "", clothProductList));
-        categoryList.add(createProductCategory("식품", "", foodProductList));
+        categoryList.add(createProductCategory("전자제품", "", productProcess.getElectricProductList()));
+        categoryList.add(createProductCategory("의류", "", productProcess.getClothProductList()));
+        categoryList.add(createProductCategory("식품", "", productProcess.getFoodProductList()));
         //endregion
 
         //region 장바구니 관련 카테고리 추가
         if (!customer.getShoppingCart().getOrderingProductList().isEmpty()) {
-            categoryList.add(createCommandCategory("장바구니 확인", "장바구니를 확인 후 주문합니다", menu -> shoppingCartToOrderStart()));
-            categoryList.add(createCommandCategory("주문 취소", "주문 대기 중인 상품을 취소합니다", menu -> shoppingCartClearStart()));
+            categoryList.add(createOrderCategory("장바구니 확인", "장바구니를 확인 후 주문합니다", menu -> shoppingCartToOrderStart()));
+            categoryList.add(createOrderCategory("주문 취소", "주문 대기 중인 상품을 취소합니다", menu -> shoppingCartClearStart()));
         }
+        //endregion
+
+        //region 관리자 기능 추가
+        categoryList.add(createAdminCategory("관리자 기능", "", menu -> adminStart()));
         //endregion
 
         return categoryList;
@@ -497,7 +557,7 @@ public class CommerceSystem {
         //region 메뉴 출력 및 입력
         SelectActionResult menu;
 
-        // 메뉴 시작 -> 카테고리 보여주기 -> 상품 선택시 쇼핑카트 보여주기
+        // 메뉴 시작 -> 카테고리 보여주기 -> 상품 선택시 장바구니 보여주기
         while (true) {
             System.out.println(customer.getName() + "님, 환영합니다!");
 
@@ -516,7 +576,7 @@ public class CommerceSystem {
 
             switch (selectedCategory.getCategoryType()) {
                 case PRODUCT -> categoryStart(selectedCategory);
-                case COMMAND -> selectedCategory.commandCategoryMenuExecute(CommerceSystem.this);
+                case ORDER, ADMIN -> selectedCategory.nonProductCategoryMenuExecute(CommerceSystem.this);
             }
         }
 

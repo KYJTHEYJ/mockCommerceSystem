@@ -2,5 +2,6 @@ package category;
 
 public enum CategoryType {
     PRODUCT,
-    COMMAND
+    ORDER,
+    ADMIN
 }
