@@ -3,13 +3,15 @@ package main.system;
 import category.Category;
 import category.CategoryType;
 import customer.Customer;
-import customer.shoppingcart.ShoppingCartProduct;
+import product.OrderingProduct;
 import main.system.action.SelectActionResult;
 import product.Product;
 
 import java.text.DecimalFormat;
 import java.util.*;
 
+import static category.Category.createCommandCategory;
+import static category.Category.createProductCategory;
 import static main.system.action.Actions.*;
 
 public class CommerceSystem {
@@ -24,10 +26,10 @@ public class CommerceSystem {
 
     // 상품 카테고리 초기 설정
     private void initProductsInCategories() {
-        electricProductList.add(new Product("Galaxy S26", 117000, "최신 Android 스마트폰", 100));
-        electricProductList.add(new Product("iPhone 18", 130000, "최신 IOS 스마트폰", 100));
-        electricProductList.add(new Product("MacBook Pro", 180000, "최신 MacBook Pro", 100));
-        electricProductList.add(new Product("MacBook Air", 125000, "최신 MacBook Air", 100));
+        electricProductList.add(new Product("Galaxy S26", 1170000, "최신 Android 스마트폰", 100));
+        electricProductList.add(new Product("iPhone 18", 1300000, "최신 IOS 스마트폰", 100));
+        electricProductList.add(new Product("MacBook Pro", 1800000, "최신 MacBook Pro", 100));
+        electricProductList.add(new Product("MacBook Air", 1250000, "최신 MacBook Air", 100));
     }
     //endregion
 
@@ -37,39 +39,38 @@ public class CommerceSystem {
     }
 
     //region 메뉴 생성 관련
+    public int printCategory(List<Category> categoryList, StringBuilder consoleStrBuilder, int index) {
+        for (Category category : categoryList) {
+            if(!category.getCategoryDescription().isEmpty()) {
+                consoleStrBuilder.append(index).append(". ").append(String.format(" %-15s | %-10s", category.getCategoryName(), category.getCategoryDescription())).append("\n");
+            } else {
+                consoleStrBuilder.append(index).append(". ").append(String.format(" %-15s", category.getCategoryName())).append("\n");
+            }
+
+            index++;
+        }
+        return index;
+    }
+
     private void menuDisplay(List<Category> categoryList) {
         List<Category> productCategoryList = categoryList.stream().filter(category -> category.getCategoryType().equals(CategoryType.PRODUCT)).toList();
-        List<Category> shoppingCartCategoryList = categoryList.stream().filter(category -> category.getCategoryType().equals(CategoryType.SHOPPINGCART)).toList();
-        List<Category> orderCategoryList = categoryList.stream().filter(category -> category.getCategoryType().equals(CategoryType.ORDER)).toList();
+        List<Category> shoppingCartCategoryList = categoryList.stream().filter(category -> category.getCategoryType().equals(CategoryType.COMMAND)).toList();
         StringBuilder consoleStrBuilder = new StringBuilder();
 
         // 메인 메뉴 디스플레이
         consoleStrBuilder.append("\n[ 실시간 커머스 플랫폼 ]\n");
         int index = 1;
-        for (Category category : productCategoryList) {
-            consoleStrBuilder.append(index).append(". ").append(category.getCategoryName()).append("\n");
-            index++;
-        }
+        index = printCategory(productCategoryList, consoleStrBuilder, index);
 
         consoleStrBuilder.append("0.").append(String.format(" %-15s | %-10s", "exit", "프로그램 종료")).append("\n");
 
         // 주문 관련 쪽 디스플레이
-        if(!orderCategoryList.isEmpty() || !shoppingCartCategoryList.isEmpty()) {
+        if (!shoppingCartCategoryList.isEmpty()) {
             consoleStrBuilder.append("\n[ 주문 관리 ]\n");
         }
 
-        if(!shoppingCartCategoryList.isEmpty()) {
-            for (Category category : shoppingCartCategoryList) {
-                consoleStrBuilder.append(index).append(". ").append(category.getCategoryName()).append("\n");
-                index++;
-            }
-        }
-
-        if (!orderCategoryList.isEmpty()) {
-            for (Category category : orderCategoryList) {
-                consoleStrBuilder.append(index).append(". ").append(category.getCategoryName()).append("\n");
-                index++;
-            }
+        if (!shoppingCartCategoryList.isEmpty()) {
+            index = printCategory(shoppingCartCategoryList, consoleStrBuilder, index);
         }
         //endregion
 
@@ -147,7 +148,7 @@ public class CommerceSystem {
         }
     }
 
-    private void CategoryStart(Category category) {
+    private void categoryStart(Category category) {
         SelectActionResult result;
 
         do {
@@ -194,7 +195,7 @@ public class CommerceSystem {
             if (selectNum != 1) {
                 throw new IndexOutOfBoundsException();
             } else {
-                if(product.getProductQuantity() > 0) {
+                if (product.getProductQuantity() > 0) {
                     customer.getShoppingCart().addProductToCart(product);
                     System.out.print(product.getProductName() + "이(가) 장바구니에 추가되었습니다\n");
                     return SelectActionResult.selected(selectNum);
@@ -230,13 +231,20 @@ public class CommerceSystem {
         consoleStrBuilder.append("\n[ 장바구니 내역 주문하기 ]\n");
         consoleStrBuilder.append("[ 장바구니 내역 ]\n");
 
-        for (ShoppingCartProduct shoppingCartProduct : customer.getShoppingCart().getShoppingCartProductList()) {
-            consoleStrBuilder.append(shoppingCartProduct.printInfoInShoppingCart()).append("\n");
+        for (OrderingProduct OrderingProduct : customer.getShoppingCart().getOrderingProductList()) {
+            consoleStrBuilder.append(OrderingProduct.printOrderingCart()).append("\n");
         }
 
         consoleStrBuilder.append("[ 총 주문 금액 ]\n");
-        consoleStrBuilder.append(new DecimalFormat("###,###")
-                .format(customer.getShoppingCart().getShoppingCartSumPrice(customer)))
+        consoleStrBuilder.append("할인 전 금액 : ").append(new DecimalFormat("###,###")
+                .format(customer.getShoppingCart().getShoppingCartOriginSumPrice())).append("원\n");
+        consoleStrBuilder.append(String.format("%s 고객님의 등급 %s 할인율 (%d%%) 할인된 금액: %s"
+                , customer.getName()
+                , customer.getGrade().name()
+                , customer.getGrade().discountRate
+                , new DecimalFormat("###,###").format(customer.getShoppingCart().getShoppingCartDiscountPrice(customer)))).append("원\n");
+        consoleStrBuilder.append("< 최종 주문 금액 > ").append(new DecimalFormat("###,###")
+                        .format(customer.getShoppingCart().getShoppingCartSumPrice(customer)))
                 .append("원\n");
         consoleStrBuilder.append("1. 주문 확정\n")
                 .append("2. 메인으로 돌아가기\n");
@@ -261,15 +269,25 @@ public class CommerceSystem {
             if (selectNum != 1) {
                 throw new IndexOutOfBoundsException();
             } else {
-               System.out.println("주문이 완료 되었습니다! 총 금액 : " + new DecimalFormat("###,###")
-                       .format(customer.getShoppingCart().getShoppingCartSumPrice(customer)));
+                System.out.println("주문이 완료 되었습니다!\n < 결제 금액 > " + new DecimalFormat("###,###")
+                        .format(customer.getShoppingCart().getShoppingCartSumPrice(customer)) + "원\n");
 
-               for (ShoppingCartProduct shoppingCartProduct : customer.getShoppingCart().getShoppingCartProductList()) {
-                  Product product = shoppingCartProduct.getProduct();
-                  product.setProductQuantity(product.getProductQuantity() - shoppingCartProduct.getQuantity());
-               }
+                for (OrderingProduct OrderingProduct : customer.getShoppingCart().getOrderingProductList()) {
+                    Product product = OrderingProduct.getProduct();
 
-               return SelectActionResult.selected(selectNum);
+                   /*
+                   System.out.printf(String.format("%s 재고가 %d -> %d 개로 업데이트 됩니다\n"
+                           , product.getProductName()
+                           , product.getProductQuantity()
+                           , product.getProductQuantity() - OrderingProduct.getQuantity()));
+                   */
+                    product.setProductQuantity(product.getProductQuantity() - OrderingProduct.getQuantity());
+                }
+
+                // 주문 했으니 장바구니 안 비우기
+                customer.getShoppingCart().getOrderingProductList().clear();
+
+                return SelectActionResult.selected(selectNum);
             }
         } catch (IndexOutOfBoundsException e) {
             return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
@@ -290,10 +308,11 @@ public class CommerceSystem {
             }
         } while (!result.getAction().equals(SELECTED) && !result.getAction().equals(EXIT));
     }
-    //endregion
 
-    //region 주문 관련
-    //endregion
+    private void shoppingCartClear() {
+        System.out.println("장바구니 안 주문들을 전부 취소하였습니다!\n");
+        customer.getShoppingCart().getOrderingProductList().clear();
+    }
     //endregion
 
     //region "카테고리 총합"
@@ -301,26 +320,16 @@ public class CommerceSystem {
         List<Category> categoryList = new ArrayList<>();
 
         //region 상품 관련 카테고리 추가
-        categoryList.add(new Category(CategoryType.PRODUCT, "전자제품", electricProductList));
-        categoryList.add(new Category(CategoryType.PRODUCT,"의류", clothProductList));
-        categoryList.add(new Category(CategoryType.PRODUCT, "식품", foodProductList));
+        categoryList.add(createProductCategory("전자제품", "", electricProductList));
+        categoryList.add(createProductCategory("의류", "", clothProductList));
+        categoryList.add(createProductCategory("식품", "", foodProductList));
         //endregion
 
         //region 장바구니 관련 카테고리 추가
-        if(!customer.getShoppingCart().getShoppingCartProductList().isEmpty()) {
-            List<Product> productList = new ArrayList<>();
-
-            for (ShoppingCartProduct shoppingCartProduct : customer.getShoppingCart().getShoppingCartProductList()) {
-                productList.add(shoppingCartProduct.getProduct());
-            }
-
-            categoryList.add(new Category(CategoryType.SHOPPINGCART, "장바구니 확인", productList));
+        if (!customer.getShoppingCart().getOrderingProductList().isEmpty()) {
+            categoryList.add(createCommandCategory("장바구니 확인", "장바구니를 확인 후 주문합니다", menu -> shoppingCartToOrderStart()));
+            categoryList.add(createCommandCategory("주문 취소", "진행 중인 주문을 취소합니다 (장바구니에 담긴 것들을 비웁니다)", menu -> shoppingCartClear()));
         }
-        //endregion
-
-        //region 주문 관련 카테고리 추가
-        if(!customer.getOrder().getOrderProductList().isEmpty())
-            categoryList.add(new Category(CategoryType.ORDER, "주문 취소", customer.getOrder().getOrderProductList()));
         //endregion
 
         return categoryList;
@@ -347,15 +356,11 @@ public class CommerceSystem {
                 continue;
             }
 
-
             Category selectedCategory = categoryList.get(menu.getSelectIndex());
 
             switch (selectedCategory.getCategoryType()) {
-                case PRODUCT -> CategoryStart(selectedCategory);
-                case SHOPPINGCART -> shoppingCartToOrderStart();
-                case ORDER -> {
-
-                }
+                case PRODUCT -> categoryStart(selectedCategory);
+                case COMMAND -> selectedCategory.menuExecute(CommerceSystem.this);
             }
         }
 

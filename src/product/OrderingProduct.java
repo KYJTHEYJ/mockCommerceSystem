@@ -1,18 +1,16 @@
-package customer.shoppingcart;
+package product;
 
-import product.Product;
-
-public class ShoppingCartProduct {
+public class OrderingProduct {
     /// 원본 Product 를 유지해야 재고 조정이 가능함
     private final Product product;
     private int quantity;
 
-    public ShoppingCartProduct(Product product, int quantity) {
+    public OrderingProduct(Product product, int quantity) {
         this.product = product;
         this.quantity = quantity;
     }
 
-    public String printInfoInShoppingCart() {
+    public String printOrderingCart() {
         return String.format("%s | %d | %s | 주문 수량 : %d개", product.getProductName(), product.getProductPrice(), product.getProductDescription(), quantity);
     }
 
