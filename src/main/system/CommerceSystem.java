@@ -20,7 +20,7 @@ public class CommerceSystem {
     private final Customer customer;
     private final Scanner scanner = new Scanner(System.in);
 
-    //region 상품 카테고리 설정
+    //region 상품 카테고리 초기 설정 관련
     // 생성할 카테고리
     List<Product> electricProductList = new ArrayList<>();
     List<Product> clothProductList = new ArrayList<>();
@@ -40,7 +40,7 @@ public class CommerceSystem {
         initProductsInCategories();
     }
 
-    //region 메뉴 생성 관련
+    //region 메뉴 및 카테고리 생성 관련
     public int printCategory(List<Category> categoryList, StringBuilder consoleStrBuilder, int index) {
         for (Category category : categoryList) {
             if (!category.getCategoryDescription().isEmpty()) {
@@ -253,7 +253,6 @@ public class CommerceSystem {
     }
     //endregion
 
-    //region 쇼핑카트 관련
     //region 쇼핑카트 상품 추가 기능 관련
     private void addProductShoppingCartDisplay(Product product) {
         String consoleStrBuilder = "선택한 상품 : "
@@ -287,7 +286,7 @@ public class CommerceSystem {
                     System.out.print(product.getProductName() + "이(가) 장바구니에 추가되었습니다\n");
                     return SelectActionResult.selected(selectNum);
                 } else {
-                    return SelectActionResult.soldOut(product.getProductName() + " 상품의 재고가 없습니다!\n");
+                    return SelectActionResult.error(product.getProductName() + " 상품의 재고가 없습니다!\n");
                 }
             }
         } catch (IndexOutOfBoundsException e) {
@@ -306,7 +305,7 @@ public class CommerceSystem {
         do {
             result = addProductShoppingCartProcess(product);
 
-            if (result.getAction().equals(ERROR) || result.getAction().equals(SOLDOUT)) {
+            if (result.getAction().equals(ERROR)) {
                 System.out.println(result.getMessage());
             }
         } while (!result.getAction().equals(SELECTED) && !result.getAction().equals(EXIT));

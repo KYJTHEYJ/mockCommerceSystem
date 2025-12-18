@@ -5,5 +5,4 @@ public enum Actions {
     , ERROR
     , EXIT
     , LOOP
-    , SOLDOUT
 }

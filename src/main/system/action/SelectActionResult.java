@@ -26,6 +26,8 @@ public class SelectActionResult {
         this.message = null;
     }
 
+    // LOOP 반복으로 진행해야할 구문이 있다는 것을 안내
+
     public Actions getAction() {
         return action;
     }
@@ -53,10 +55,6 @@ public class SelectActionResult {
 
     public static SelectActionResult exit() {
         return new SelectActionResult(Actions.EXIT);
-    }
-
-    public static SelectActionResult soldOut(String message) {
-        return new SelectActionResult(Actions.SOLDOUT, message);
     }
 
     public static SelectActionResult loop() {
