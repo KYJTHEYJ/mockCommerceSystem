@@ -1,0 +1,68 @@
+# 간이 콘솔 및 메모리 저장 기반 커머스 시스템 구현
+
+
+## 구조
+<div align=center>
+<img width="301" height="647" alt="image" src="https://github.com/user-attachments/assets/00625fab-60d3-4f43-b389-81e730ea45ec" />
+</div>
+
+### main 패키지
+- 실행되는 메인 클래스가 담긴 Main
+- 모든 프로세스를 포함하여 프로세스 간의 실질적인 로직 수행을 담당하는 CommerceSystem 클래스
+- 전체적인 클래스에 사용될 유틸 클래스인 util 패키지 안 Util (현재는 금액 포맷에 맞추는 기능 하나 포함)
+- 전체적인 프로세스와 부가 기능을 담당하고 있는 process 패키지
+- 초기 설정 데이터인 ProductData 클래스
+- 프로세스마다 커스텀 응답의 방식을 규정한 action 패키지
+
+### product, customer, category 패키지
+- 전체적으로 사용될 상품, 장바구니 안 상품, 고객, 장바구니, 카테고리의 형식을 규정, 유틸성 메서드들이 클래스들이 각각 위치
+- 카테고리의 타입을 규정하는 CategoryEnum 클래스
+- 프로세스마다 커스텀 응답 방식이 규정된 Actions Enum 클래스
+- 고객의 등급과 할인율, 할인율에 따른 가격을 반환하는 Grade Enum 클래스
+
+## 클래스 설명
+#### **전체적으로 안내사항에 규정된 사항들을 준수하려 하였고, 커스텀하여 새로 추가한 클래스들의 설명을 주로 서술**
+
+### Action 관련
+- Action 은 커스텀 응답을 위해서 만든 클래스로 4개의 응답 형식을 가짐
+- SELECTED, ERROR, EXIT, LOOP
+  > 각각은 위 4가지의 응답 중 하나, 선택된 숫자 (인덱스가 아닌 입력된 숫자 그대로), 메세지를 가짐
+  
+
+  > SELECTED는 입력된 숫자를 포함하나 메세지는 받지 않음
+  >
+  > (일반적으로 기능의 Success의 의미를 지님, 입력한 메뉴 값의 전달을 위해 사용)
+  
+  
+  > ERROR는 입력된 숫자를 -1로 고정되서 갖고 있으나 활용은 없음, 에러에 대한 메세지를 포함
+  >
+  > (일반적으로 기능의 Fail의 의미를 지님)
+  
+  > EXIT는 입력된 숫자를 -1로 고정되서 갖고 있으나 활용은 없고 메세지도 갖고 있지 않음
+  >
+  > (일반적으로 Success의 의미를 지니며 기능이 완전히 종료되었음을 추가로 알림)
+  
+  > LOOP는 입력된 숫자를 -1로 고정되서 갖고 있으나 활용은 없고 메세지도 갖고 있지 않음
+  >
+  > (일반적으로 Success의 의미를 지니며 시작한 기능이 재수행되어야 함을 알림)
+- 위 4가지의 응답과 입력받은 메뉴값을 통해 프로세스 간의 진행이 이루어짐
+
+### CategoryType 관련
+- 카테고리는 PRODUCT, ORDER, ADMIN 3가지의 타입을 규정
+- 각각 상품, 주문, 관리자 기능을 포괄함
+
+### OrderingProduct 관련
+- OrderingProduct는 Product의 원본과 주문 수량을 필드로 가진 클래스
+
+## 구현에 관하여
+- 각각의 프로세스 내부 메서드들은 콘솔 프린트과 기능 구현을 하나의 패턴으로 규정
+
+  
+*PreDisplay-PreProcess, Display -> Process -> Start*
+- 메서드들의 흐름이 위 구조의 형식을 지니어 프로세스 클래스를 이루고 있음
+<div align="center">
+<img width="587" height="219" alt="image" src="https://github.com/user-attachments/assets/9cf9d272-62e3-4d75-b910-ef929c9ad063" />
+</div>
+
+## 전제사항
+- 장바구니 구현에 있어 고객이 로그인 되어 사용한다는 느낌이 강하게 들어, CommerceSystem 생성자는 Customer를 필드로 가지고 있음
