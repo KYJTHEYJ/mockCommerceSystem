@@ -16,7 +16,7 @@ public class ShoppingCartProcess {
     private final Scanner scanner;
     private final Customer customer;
 
-    public ShoppingCartProcess (Scanner scanner,  Customer customer) {
+    public ShoppingCartProcess(Scanner scanner, Customer customer) {
         this.scanner = scanner;
         this.customer = customer;
     }
@@ -50,6 +50,17 @@ public class ShoppingCartProcess {
                 throw new IndexOutOfBoundsException();
             } else {
                 if (product.getProductQuantity() > 0) {
+                    OrderingProduct inCartProduct = customer.getShoppingCart().getOrderingProductList().stream()
+                            .filter(orderingProduct ->
+                                    orderingProduct.getProduct().equals(product)
+                            ).toList().stream().findFirst().orElse(null);
+
+                    if (inCartProduct != null) {
+                        if (inCartProduct.getQuantity() >= product.getProductQuantity()) {
+                            return SelectActionResult.error(product.getProductName() + " 상품의 재고가 부족합니다!\n");
+                        }
+                    }
+
                     customer.getShoppingCart().addProductToCart(product);
                     System.out.print(product.getProductName() + "이(가) 장바구니에 추가되었습니다\n");
                     return SelectActionResult.selected(selectNum);
@@ -92,13 +103,13 @@ public class ShoppingCartProcess {
         }
 
         consoleStrBuilder.append("[ 총 주문 금액 ]\n");
-        consoleStrBuilder.append("할인 전 금액 : ").append(Util.formattingPrice(customer.getShoppingCart().getShoppingCartOriginSumPrice()));
-        consoleStrBuilder.append(String.format("%s 고객님의 등급 %s 할인율 (%d%%) 할인된 금액: %s"
+        consoleStrBuilder.append("할인 전 금액 : ").append(Util.formattingPrice(customer.getShoppingCart().getShoppingCartOriginSumPrice())).append("\n");
+        consoleStrBuilder.append(String.format("%s 고객님의 등급 %s 할인율 (%d%%) 할인된 금액: %s\n"
                 , customer.getName()
                 , customer.getGrade().name()
                 , customer.getGrade().discountRate
                 , Util.formattingPrice(customer.getShoppingCart().getShoppingCartDiscountPrice(customer))));
-        consoleStrBuilder.append("< 최종 주문 금액 > ").append(Util.formattingPrice(customer.getShoppingCart().getShoppingCartSumPrice(customer)));
+        consoleStrBuilder.append("\n< 최종 주문 금액 > ").append(Util.formattingPrice(customer.getShoppingCart().getShoppingCartSumPrice(customer))).append("\n");
         consoleStrBuilder.append("1. 주문 확정\n")
                 .append("2. 메인으로 돌아가기\n");
 
@@ -117,6 +128,18 @@ public class ShoppingCartProcess {
 
             switch (selectNum) {
                 case 1 -> {
+                    // 장바구니 수량이 상품 재고보다 많으면 주문 불가 추가
+                    for (OrderingProduct OrderingProduct : customer.getShoppingCart().getOrderingProductList()) {
+                        if (OrderingProduct.getQuantity() > OrderingProduct.getProduct().getProductQuantity()) {
+                            return SelectActionResult.error(
+                                    String.format("< %s > 상품의 재고가 부족합니다! (장바구니 수량: %d개 재고: %d개)\n",
+                                            OrderingProduct.getProduct().getProductName()
+                                            , OrderingProduct.getQuantity()
+                                            , OrderingProduct.getProduct().getProductQuantity())
+                            );
+                        }
+                    }
+
                     System.out.println("주문이 완료 되었습니다!\n < 결제 금액 > " + Util.formattingPrice(customer.getShoppingCart().getShoppingCartSumPrice(customer)) + "원\n");
 
                     for (OrderingProduct OrderingProduct : customer.getShoppingCart().getOrderingProductList()) {

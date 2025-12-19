@@ -67,8 +67,4 @@ public class ShoppingCart {
     public boolean removeProductToCartUsingProductName(String productName) {
         return shoppingCartList.removeIf(OrderingProduct -> OrderingProduct.getProduct().getProductName().equals(productName));
     }
-
-    public boolean removeProductToCartUsingProduct(Product product) {
-        return shoppingCartList.removeIf(OrderingProduct -> OrderingProduct.getProduct().equals(product));
-    }
 }

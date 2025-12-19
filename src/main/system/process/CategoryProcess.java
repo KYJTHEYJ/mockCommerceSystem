@@ -118,7 +118,7 @@ public class CategoryProcess {
             index++;
         }
 
-        consoleStrBuilder.append("0.").append(String.format(" %-15s | %-10s", "back", "메인으로 돌아가기"));
+        consoleStrBuilder.append("0.").append(String.format(" %-15s | %-10s", "back", "뒤로가기"));
 
         System.out.println(consoleStrBuilder);
     }
@@ -167,7 +167,7 @@ public class CategoryProcess {
                 scanner.nextLine();
 
                 if (selectNum == 0) {
-                    return SelectActionResult.exit();
+                    return SelectActionResult.loop();
                 }
 
                 if (selectNum < 0 || selectNum > filteredProductList.size()) {

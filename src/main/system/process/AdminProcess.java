@@ -123,19 +123,18 @@ public class AdminProcess {
                 case 1 -> {
                     if (selectCategory.addProductInCategory(newProduct)) {
                         System.out.println("상품이 성공적으로 추가되었습니다!");
+                        return SelectActionResult.exit();
                     } else {
                         return SelectActionResult.error("중복된 상품명이 존재합니다!");
                     }
                 }
                 case 2 -> {
-                    return SelectActionResult.exit();
+                    return SelectActionResult.loop();
                 }
-            }
 
-            if (selectNum < 0 || selectNum > productData.getProductCategoryList().size()) {
-                throw new IndexOutOfBoundsException();
-            } else {
-                return SelectActionResult.exit();
+                default -> {
+                    throw new IndexOutOfBoundsException();
+                }
             }
         } catch (IndexOutOfBoundsException e) {
             return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
@@ -208,37 +207,35 @@ public class AdminProcess {
                 case 1 -> {
                     String formatModifyProductPrice = Util.formattingPrice(modifyProduct.getProductPrice());
                     System.out.println("현재 가격 : " + formatModifyProductPrice);
-                    System.out.println("새로운 가격을 입력해주세요 : ");
+                    System.out.print("새로운 가격을 입력해주세요 : ");
                     int newPrice = scanner.nextInt();
-                    String formatNewPrice = Util.formattingPrice(newPrice);
                     scanner.nextLine();
+                    String formatNewPrice = Util.formattingPrice(newPrice);
 
                     modifyProduct.setProductPrice(newPrice);
-                    System.out.printf("%s의 가격이 %s -> %s으로 수정되었습니다", modifyProduct.getProductName(), formatModifyProductPrice, formatNewPrice);
+                    System.out.printf("\n< %s > 의 가격이 %s -> %s으로 수정되었습니다\n", modifyProduct.getProductName(), formatModifyProductPrice, formatNewPrice);
                     return SelectActionResult.exit();
                 }
                 case 2 -> {
                     System.out.println("현재 설명 : " + modifyProduct.getProductDescription());
-                    System.out.println("새로운 설명을 입력해주세요 : ");
+                    System.out.print("새로운 설명을 입력해주세요 : ");
                     String newDescription = scanner.nextLine();
-                    scanner.nextLine();
 
                     modifyProduct.setProductDescription(newDescription);
-                    System.out.println("설명이 수정되었습니다");
+                    System.out.println("\n설명이 수정되었습니다\n");
                     return SelectActionResult.exit();
                 }
                 case 3 -> {
                     int modifyProductQuantity = modifyProduct.getProductQuantity();
                     System.out.println("현재 재고 : " + modifyProductQuantity + "개");
-                    System.out.println("새로운 재고을 입력해주세요 : ");
+                    System.out.print("새로운 재고을 입력해주세요 : ");
                     int newQuantity = scanner.nextInt();
                     scanner.nextLine();
 
                     modifyProduct.setProductQuantity(newQuantity);
-                    System.out.printf("%s의 재고가 %d개 -> %d개로 수정되었습니다", modifyProduct.getProductName(), modifyProductQuantity, newQuantity);
+                    System.out.printf("\n< %s >의 재고가 %d개 -> %d개로 수정되었습니다\n", modifyProduct.getProductName(), modifyProductQuantity, newQuantity);
                     return SelectActionResult.exit();
                 }
-
                 default -> {
                     throw new IndexOutOfBoundsException();
                 }
@@ -329,6 +326,23 @@ public class AdminProcess {
         System.out.println(consoleStrBuilder);
     }
 
+    private boolean askDelete(Product product) {
+        System.out.printf("정말 < %s > 상품을 삭제하시겠습니까?\n", product.getProductName());
+        System.out.println("1. 확인");
+        System.out.println("2. 취소");
+        System.out.println("\n메뉴 번호를 입력해주세요 : ");
+        int selectNum = scanner.nextInt();
+        scanner.nextLine();
+
+        if (selectNum == 1) {
+            return true;
+        } else if (selectNum == 2) {
+            return false;
+        } else {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
     private SelectActionResult deleteProductInCategoryProcess() {
         int selectNum;
         SelectActionResult result;
@@ -353,18 +367,25 @@ public class AdminProcess {
                 return SelectActionResult.exit();
             }
 
-            if (!selectCategory.getProductList().removeIf(product ->
-                    product.equals(selectCategory.getProductList().get(selectNum - 1))
-            )) {
-                return SelectActionResult.error("상품 삭제에 실패하였습니다! 다시 한번 시도해주세요");
-            } else {
-                customer.getShoppingCart().removeProductToCartUsingProduct(selectCategory.getProductList().get(selectNum - 1));
+            if (selectNum < 0 || selectNum > selectCategory.getProductList().size()) {
+                throw new IndexOutOfBoundsException();
             }
 
-            if (selectNum < 0 || selectNum > productData.getProductCategoryList().size()) {
-                throw new IndexOutOfBoundsException();
+            Product productToDelete = selectCategory.getProductList().get(selectNum - 1);
+            if (!askDelete(productToDelete)) {
+                return SelectActionResult.loop();
+            }
+
+            // 카테고리는 불변이라서 그냥 지울 수 있음
+            if (!selectCategory.getProductList().removeIf(product ->
+                    product.equals(productToDelete)
+            )) {
+                return SelectActionResult.error("< " + productToDelete.getProductName() + " > 상품 삭제에 실패하였습니다! 다시 한번 시도해주세요");
             } else {
-                return SelectActionResult.exit();
+                // 장바구니에서도 해당 상품 제거, 이름으로 비교해야함
+                customer.getShoppingCart().removeProductToCartUsingProductName(productToDelete.getProductName());
+                System.out.println("< " + productToDelete.getProductName() + " > 상품을 삭제하였습니다");
+                return SelectActionResult.loop();
             }
         } catch (IndexOutOfBoundsException e) {
             return SelectActionResult.error("없는 번호를 입력하셨습니다\n");
@@ -395,7 +416,7 @@ public class AdminProcess {
     private SelectActionResult showAllProductInCategoryProcess() {
         System.out.println("\n[ 전체 상품 현황 ]");
 
-        for(Product product : productData.getAllProductList()) {
+        for (Product product : productData.getAllProductList()) {
             System.out.println(product.printInfo());
         }
 
