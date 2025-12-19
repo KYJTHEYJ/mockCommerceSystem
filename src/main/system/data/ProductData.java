@@ -32,6 +32,14 @@ public class ProductData {
         electricProductList.add(new Product("Sony WF1000XM5", 280000, "소니 무선 블루투스 이어폰 XM5", 3));
     }
 
+    public List<Product> getAllProductList() {
+        List<Product> allProductList = new ArrayList<>();
+        allProductList.addAll(electricProductList);
+        allProductList.addAll(clothProductList);
+        allProductList.addAll(foodProductList);
+        return allProductList;
+    }
+
     public List<Category> getProductCategoryList() {
         List<Category> categories = new ArrayList<>();
         categories.add(createProductCategory("전자제품", "", electricProductList));

@@ -49,7 +49,7 @@ public class CategoryProcess {
         //endregion
 
         //region 관리자 기능 추가
-        categoryList.add(createAdminCategory("관리자 기능", "", menu -> adminProcess.addProductInCategoryStart()));
+        categoryList.add(createAdminCategory("관리자 기능", "", menu -> adminProcess.adminMenuStart()));
         //endregion
 
         //region 장바구니 관련 카테고리 추가
@@ -69,7 +69,7 @@ public class CategoryProcess {
                                    "1. 전체 상품 보기\n" +
                                    "2. 가격 설정 후 가격 이상 상품 보기\n" +
                                    "3. 가격 설정 후 가격 이하 상품 보기\n" +
-                                   "0." + String.format(" %-15s | %-10s", "back", "뒤로가기");
+                                   "0." + String.format(" %-15s | %-10s", "back", "메인으로 돌아가기");
 
         System.out.println(consoleStrBuilder);
     }
@@ -118,7 +118,7 @@ public class CategoryProcess {
             index++;
         }
 
-        consoleStrBuilder.append("0.").append(String.format(" %-15s | %-10s", "back", "뒤로가기"));
+        consoleStrBuilder.append("0.").append(String.format(" %-15s | %-10s", "back", "메인으로 돌아가기"));
 
         System.out.println(consoleStrBuilder);
     }
