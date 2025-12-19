@@ -19,14 +19,12 @@ public class SelectActionResult {
         this.message = message;
     }
 
-    // EXIT
+    // EXIT, LOOP
     public SelectActionResult(Actions action) {
         this.action = action;
         this.selectNumber = -1;
         this.message = null;
     }
-
-    // LOOP 반복으로 진행해야할 구문이 있다는 것을 안내
 
     public Actions getAction() {
         return action;
