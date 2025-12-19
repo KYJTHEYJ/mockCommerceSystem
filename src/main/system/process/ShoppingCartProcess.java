@@ -2,10 +2,10 @@ package main.system.process;
 
 import customer.Customer;
 import main.system.action.SelectActionResult;
+import main.system.util.Util;
 import product.OrderingProduct;
 import product.Product;
 
-import java.text.DecimalFormat;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -92,16 +92,13 @@ public class ShoppingCartProcess {
         }
 
         consoleStrBuilder.append("[ 총 주문 금액 ]\n");
-        consoleStrBuilder.append("할인 전 금액 : ").append(new DecimalFormat("###,###")
-                .format(customer.getShoppingCart().getShoppingCartOriginSumPrice())).append("원\n");
+        consoleStrBuilder.append("할인 전 금액 : ").append(Util.formattingPrice(customer.getShoppingCart().getShoppingCartOriginSumPrice()));
         consoleStrBuilder.append(String.format("%s 고객님의 등급 %s 할인율 (%d%%) 할인된 금액: %s"
                 , customer.getName()
                 , customer.getGrade().name()
                 , customer.getGrade().discountRate
-                , new DecimalFormat("###,###").format(customer.getShoppingCart().getShoppingCartDiscountPrice(customer)))).append("원\n");
-        consoleStrBuilder.append("< 최종 주문 금액 > ").append(new DecimalFormat("###,###")
-                        .format(customer.getShoppingCart().getShoppingCartSumPrice(customer)))
-                .append("원\n");
+                , Util.formattingPrice(customer.getShoppingCart().getShoppingCartDiscountPrice(customer))));
+        consoleStrBuilder.append("< 최종 주문 금액 > ").append(Util.formattingPrice(customer.getShoppingCart().getShoppingCartSumPrice(customer)));
         consoleStrBuilder.append("1. 주문 확정\n")
                 .append("2. 메인으로 돌아가기\n");
 
@@ -120,8 +117,7 @@ public class ShoppingCartProcess {
 
             switch (selectNum) {
                 case 1 -> {
-                    System.out.println("주문이 완료 되었습니다!\n < 결제 금액 > " + new DecimalFormat("###,###")
-                            .format(customer.getShoppingCart().getShoppingCartSumPrice(customer)) + "원\n");
+                    System.out.println("주문이 완료 되었습니다!\n < 결제 금액 > " + Util.formattingPrice(customer.getShoppingCart().getShoppingCartSumPrice(customer)) + "원\n");
 
                     for (OrderingProduct OrderingProduct : customer.getShoppingCart().getOrderingProductList()) {
                         Product product = OrderingProduct.getProduct();

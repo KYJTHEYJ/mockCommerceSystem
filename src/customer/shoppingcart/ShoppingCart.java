@@ -65,7 +65,10 @@ public class ShoppingCart {
     }
 
     public boolean removeProductToCartUsingProductName(String productName) {
-        // 이름으로 찾아 상품 제거하기
         return shoppingCartList.removeIf(OrderingProduct -> OrderingProduct.getProduct().getProductName().equals(productName));
+    }
+
+    public boolean removeProductToCartUsingProduct(Product product) {
+        return shoppingCartList.removeIf(OrderingProduct -> OrderingProduct.getProduct().equals(product));
     }
 }

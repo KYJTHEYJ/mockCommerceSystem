@@ -1,10 +1,12 @@
 package product;
 
+import main.system.util.Util;
+
 public class Product {
     /// ProductName은 유니크
-    private final String productName;
-    private final int productPrice;
-    private final String productDescription;
+    private String productName;
+    private int productPrice;
+    private String productDescription;
     private int productQuantity;
 
     public Product(String productName, int productPrice, String productDescription, int productQuantity) {
@@ -18,12 +20,24 @@ public class Product {
         return productName;
     }
 
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
     public String getProductDescription() {
         return productDescription;
     }
 
+    public void setProductDescription(String productDescription) {
+        this.productDescription = productDescription;
+    }
+
     public int getProductPrice() {
         return productPrice;
+    }
+
+    public void setProductPrice(int productPrice) {
+        this.productPrice = productPrice;
     }
 
     public int getProductQuantity() {
@@ -35,14 +49,14 @@ public class Product {
     }
 
     public String printInfoButNotQty() {
-        return String.format("%-15s | %-10d | %s", productName, productPrice, productDescription);
+        return String.format("%-15s | %-15s | %s", productName, Util.formattingPrice(productPrice), productDescription);
     }
 
     public String printInfoForAddShoppingCart() {
-        return String.format("%s | %d | %s", productName, productPrice, productDescription);
+        return String.format("%-15s | %-15s | %s", productName, Util.formattingPrice(productPrice), productDescription);
     }
 
     public String printInfo() {
-        return String.format("%s | %d | %s | 재고 : %d개", productName, productPrice, productDescription, productQuantity);
+        return String.format("%-15s | %-15s | %s | 재고 : %d개", productName, Util.formattingPrice(productPrice), productDescription, productQuantity);
     }
 }

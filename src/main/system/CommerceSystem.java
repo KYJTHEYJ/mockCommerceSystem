@@ -20,7 +20,7 @@ public class CommerceSystem {
         Scanner scanner = new Scanner(System.in);
         ProductData productData = new ProductData();
         ShoppingCartProcess shoppingCartProcess = new ShoppingCartProcess(scanner, customer);
-        AdminProcess adminProcess = new AdminProcess(scanner, productData);
+        AdminProcess adminProcess = new AdminProcess(scanner, productData, customer);
         this.categoryProcess = new CategoryProcess(scanner, customer, productData, shoppingCartProcess, adminProcess);
         this.mainMenuProcess = new MainMenuProcess(scanner);
     }

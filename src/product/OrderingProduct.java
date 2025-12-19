@@ -1,5 +1,7 @@
 package product;
 
+import main.system.util.Util;
+
 public class OrderingProduct {
     /// 원본 Product 를 유지해야 재고 조정이 가능함
     private final Product product;
@@ -11,7 +13,7 @@ public class OrderingProduct {
     }
 
     public String printOrderingCart() {
-        return String.format("%s | %d | %s | 주문 수량 : %d개", product.getProductName(), product.getProductPrice(), product.getProductDescription(), quantity);
+        return String.format("%s | %s | %s | 주문 수량 : %d개", product.getProductName(), Util.formattingPrice(product.getProductPrice()), product.getProductDescription(), quantity);
     }
 
     public Product getProduct() {
