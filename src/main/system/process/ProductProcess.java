@@ -5,7 +5,7 @@ import product.Product;
 import java.util.ArrayList;
 import java.util.List;
 
-// 상품 리스트 프로세스 담당 클래스
+// 상품 데이터 담당 클래스
 // 상품 초기 데이터 설정 담당
 public class ProductProcess {
     private final List<Product> electricProductList = new ArrayList<>();

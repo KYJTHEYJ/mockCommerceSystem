@@ -17,14 +17,43 @@ import static main.system.action.Actions.EXIT;
 import static main.system.action.Actions.SELECTED;
 
 // 카테고리 프로세스 담당 클래스
-// 카테고리 생성 담당
+// 메인 메뉴 -> 카테고리 -> 각각의 세부 기능들 (상품들 주문, 장바구니 주문 관련, 관리자 기능) 연결
 public class CategoryProcess {
-    Scanner scanner;
+    private final Scanner scanner;
+    private final Customer customer;
+    private final ShoppingCartProcess shoppingCartProcess;
 
-    CategoryProcess(Scanner scanner) {
+    public CategoryProcess(Scanner scanner, Customer customer, ShoppingCartProcess shoppingCartProcess) {
         this.scanner = scanner;
+        this.customer = customer;
+        this.shoppingCartProcess = shoppingCartProcess;
     }
 
+    // 카테고리 총합하기
+    public List<Category> buildCategoryList(ProductProcess productProcess) {
+        List<Category> categoryList = new ArrayList<>();
+
+        //region 상품 관련 카테고리 추가
+        categoryList.add(createProductCategory("전자제품", "", productProcess.getElectricProductList()));
+        categoryList.add(createProductCategory("의류", "", productProcess.getClothProductList()));
+        categoryList.add(createProductCategory("식품", "", productProcess.getFoodProductList()));
+        //endregion
+
+        //region 장바구니 관련 카테고리 추가
+        if (!customer.getShoppingCart().getOrderingProductList().isEmpty()) {
+            categoryList.add(createOrderCategory("장바구니 확인", "장바구니를 확인 후 주문합니다", menu -> shoppingCartProcess.shoppingCartToOrderStart()));
+            categoryList.add(createOrderCategory("주문 취소", "주문 대기 중인 상품을 취소합니다", menu -> shoppingCartProcess.shoppingCartClearStart()));
+        }
+        //endregion
+
+        //region 관리자 기능 추가
+        //categoryList.add(createAdminCategory("관리자 기능", "", menu -> adminStart()));
+        //endregion
+
+        return categoryList;
+    }
+
+    //region 카테고리 디스플레이 및 처리
     private void categoryPreDisplay(Category category) {
         String consoleStrBuilder = String.format("\n[ %s 카테고리 ]\n", category.getCategoryName()) +
                                    "1. 전체 상품 보기\n" +
@@ -163,45 +192,9 @@ public class CategoryProcess {
                     System.out.println(result.getMessage());
                 }
                 case SELECTED -> {
-                    //addProductShoppingCartStart(category.getProductList().get(result.getSelectNumber()));
+                    shoppingCartProcess.addProductShoppingCartStart(category.getProductList().get(result.getSelectNumber()));
                 }
             }
         } while (!result.getAction().equals(EXIT));
-    }
-
-    public List<Category> buildCategoryList(ProductProcess productProcess, Customer customer) {
-        List<Category> categoryList = new ArrayList<>();
-
-        //region 상품 관련 카테고리 추가
-        categoryList.add(createProductCategory("전자제품", "", productProcess.getElectricProductList()));
-        categoryList.add(createProductCategory("의류", "", productProcess.getClothProductList()));
-        categoryList.add(createProductCategory("식품", "", productProcess.getFoodProductList()));
-        //endregion
-
-        //region 장바구니 관련 카테고리 추가
-        if (!customer.getShoppingCart().getOrderingProductList().isEmpty()) {
-            //categoryList.add(createOrderCategory("장바구니 확인", "장바구니를 확인 후 주문합니다", menu -> shoppingCartToOrderStart()));
-            //categoryList.add(createOrderCategory("주문 취소", "주문 대기 중인 상품을 취소합니다", menu -> shoppingCartClearStart()));
-        }
-        //endregion
-
-        //region 관리자 기능 추가
-        //categoryList.add(createAdminCategory("관리자 기능", "", menu -> adminStart()));
-        //endregion
-
-        return categoryList;
-    }
-
-    public int printCategory(List<Category> categoryList, StringBuilder consoleStrBuilder, int index) {
-        for (Category category : categoryList) {
-            if (!category.getCategoryDescription().isEmpty()) {
-                consoleStrBuilder.append(index).append(". ").append(String.format(" %-15s | %-10s", category.getCategoryName(), category.getCategoryDescription())).append("\n");
-            } else {
-                consoleStrBuilder.append(index).append(". ").append(String.format(" %-15s", category.getCategoryName())).append("\n");
-            }
-
-            index++;
-        }
-        return index;
     }
 }

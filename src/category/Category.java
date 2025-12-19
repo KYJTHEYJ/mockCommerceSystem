@@ -11,9 +11,9 @@ public class Category {
     private final String categoryName;
     private final String categoryDescription;
     private final List<Product> productList;
-    private final Consumer<?> menu;
+    private final Consumer<CommerceSystem> menu;
 
-    private Category(CategoryType categoryType, String categoryName, String categoryDescription, List<Product> productList, Consumer<?> menu) {
+    private Category(CategoryType categoryType, String categoryName, String categoryDescription, List<Product> productList, Consumer<CommerceSystem> menu) {
         this.categoryType = categoryType;
         this.categoryName = categoryName;
         this.categoryDescription = categoryDescription;
@@ -42,11 +42,11 @@ public class Category {
         return new Category(CategoryType.PRODUCT, categoryName, categoryDescription, productList, null);
     }
 
-    public static Category createOrderCategory(String categoryName, String categoryDescription, Consumer<?> menu) {
+    public static Category createOrderCategory(String categoryName, String categoryDescription, Consumer<CommerceSystem> menu) {
         return new Category(CategoryType.ORDER, categoryName, categoryDescription, null, menu);
     }
 
-    public static Category createAdminCategory(String categoryName, String categoryDescription, Consumer<?> menu) {
+    public static Category createAdminCategory(String categoryName, String categoryDescription, Consumer<CommerceSystem> menu) {
         return new Category(CategoryType.ADMIN, categoryName, categoryDescription, null, menu);
     }
 
