@@ -1,38 +1,27 @@
 package main.system;
 
 import category.Category;
-import category.CategoryType;
+import main.system.data.ProductData;
 import customer.Customer;
-import main.system.process.CategoryProcess;
-import main.system.process.MainMenuProcess;
-import main.system.process.ProductProcess;
-import main.system.process.ShoppingCartProcess;
-import product.OrderingProduct;
+import main.system.process.*;
 import main.system.action.SelectActionResult;
-import product.Product;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.*;
-import java.util.function.Predicate;
 
-import static category.Category.*;
 import static main.system.action.Actions.*;
 
 public class CommerceSystem {
     private final Customer customer;
-    private final Scanner scanner = new Scanner(System.in);
-
-    private final ProductProcess productProcess;
-    private final ShoppingCartProcess shoppingCartProcess;
     private final CategoryProcess categoryProcess;
     private final MainMenuProcess mainMenuProcess;
 
     public CommerceSystem(Customer customer) {
         this.customer = customer;
-        this.productProcess = new ProductProcess();
-        this.shoppingCartProcess = new ShoppingCartProcess(scanner, customer);
-        this.categoryProcess = new CategoryProcess(scanner, customer, shoppingCartProcess);
+        Scanner scanner = new Scanner(System.in);
+        ProductData productData = new ProductData();
+        ShoppingCartProcess shoppingCartProcess = new ShoppingCartProcess(scanner, customer);
+        AdminProcess adminProcess = new AdminProcess(scanner, productData);
+        this.categoryProcess = new CategoryProcess(scanner, customer, productData, shoppingCartProcess, adminProcess);
         this.mainMenuProcess = new MainMenuProcess(scanner);
     }
 
@@ -44,7 +33,7 @@ public class CommerceSystem {
         while (true) {
             System.out.println(customer.getName() + "님, 환영합니다!");
 
-            List<Category> categoryList = categoryProcess.buildCategoryList(productProcess);
+            List<Category> categoryList = categoryProcess.buildCategoryList();
 
             menu = mainMenuProcess.menuProcess(categoryList);
 

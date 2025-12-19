@@ -1,6 +1,7 @@
 package main.system.process;
 
 import category.Category;
+import main.system.data.ProductData;
 import customer.Customer;
 import main.system.action.SelectActionResult;
 import product.Product;
@@ -21,22 +22,34 @@ import static main.system.action.Actions.SELECTED;
 public class CategoryProcess {
     private final Scanner scanner;
     private final Customer customer;
+    private final ProductData productData;
     private final ShoppingCartProcess shoppingCartProcess;
+    private final AdminProcess adminProcess;
 
-    public CategoryProcess(Scanner scanner, Customer customer, ShoppingCartProcess shoppingCartProcess) {
+    public CategoryProcess(Scanner scanner
+            , Customer customer
+            , ProductData productData
+            , ShoppingCartProcess shoppingCartProcess
+            , AdminProcess adminProcess) {
         this.scanner = scanner;
         this.customer = customer;
+        this.productData = productData;
         this.shoppingCartProcess = shoppingCartProcess;
+        this.adminProcess = adminProcess;
     }
 
-    // 카테고리 총합하기
-    public List<Category> buildCategoryList(ProductProcess productProcess) {
+    //region 카테고리 총합하기
+    // 카테고리 리스트 총합하여 반환
+    public List<Category> buildCategoryList() {
         List<Category> categoryList = new ArrayList<>();
 
         //region 상품 관련 카테고리 추가
-        categoryList.add(createProductCategory("전자제품", "", productProcess.getElectricProductList()));
-        categoryList.add(createProductCategory("의류", "", productProcess.getClothProductList()));
-        categoryList.add(createProductCategory("식품", "", productProcess.getFoodProductList()));
+        /// 상품 데이터 관련은 불변으로 진행되어야 함
+        categoryList.addAll(productData.getProductCategoryList());
+        //endregion
+
+        //region 관리자 기능 추가
+        categoryList.add(createAdminCategory("관리자 기능", "", menu -> adminProcess.addProductInCategoryStart()));
         //endregion
 
         //region 장바구니 관련 카테고리 추가
@@ -46,12 +59,9 @@ public class CategoryProcess {
         }
         //endregion
 
-        //region 관리자 기능 추가
-        //categoryList.add(createAdminCategory("관리자 기능", "", menu -> adminStart()));
-        //endregion
-
         return categoryList;
     }
+    //endregion
 
     //region 카테고리 디스플레이 및 처리
     private void categoryPreDisplay(Category category) {

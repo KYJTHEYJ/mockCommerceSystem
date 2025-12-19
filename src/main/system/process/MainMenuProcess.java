@@ -75,7 +75,7 @@ public class MainMenuProcess {
                 return SelectActionResult.exit();
             }
 
-            if (selectNum < 0 || selectNum > (categoryList.size())) {
+            if (selectNum < 0 || selectNum > categoryList.size()) {
                 throw new IndexOutOfBoundsException();
             } else {
                 return SelectActionResult.selected(selectNum);
