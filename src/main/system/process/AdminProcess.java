@@ -121,12 +121,13 @@ public class AdminProcess {
 
             switch (selectNum) {
                 case 1 -> {
-                    if (selectCategory.addProductInCategory(newProduct)) {
-                        System.out.println("상품이 성공적으로 추가되었습니다!");
-                        return SelectActionResult.exit();
-                    } else {
+                    if(productData.getAllProductList().stream().anyMatch(product -> product.getProductName().equals(newProduct.getProductName()))) {
                         return SelectActionResult.error("중복된 상품명이 존재합니다!");
                     }
+
+                    selectCategory.addProductInCategory(newProduct);
+                    System.out.println("상품이 성공적으로 추가되었습니다!");
+                    return SelectActionResult.exit();
                 }
                 case 2 -> {
                     return SelectActionResult.loop();

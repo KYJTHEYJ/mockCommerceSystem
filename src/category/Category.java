@@ -56,12 +56,9 @@ public class Category {
     }
 
     // 카테고리에 상품 추가하기, 다만 Product의 이름은 유니크 함을 지켜야함
-    public boolean addProductInCategory(Product newProduct) {
+    public void addProductInCategory(Product newProduct) {
         if (getProductList().stream().filter(product -> product.getProductName().equals(newProduct.getProductName())).toList().isEmpty()) {
             getProductList().add(newProduct);
-            return true;
-        } else {
-            return false;
         }
     }
 }
