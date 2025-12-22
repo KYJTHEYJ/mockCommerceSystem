@@ -19,7 +19,7 @@ public class AdminProcess {
     private final ProductData productData;
     private final Customer customer;
     private final String adminPw = "admin123";
-    private final int loginRemainTime = 3;
+    private final int LOGIN_REMAIN_TIME = 3;
 
     public AdminProcess(Scanner scanner, ProductData productData, Customer customer) {
         this.scanner = scanner;
@@ -426,7 +426,7 @@ public class AdminProcess {
 
     //region 관리자 메뉴 제어 관련
     private boolean authAdmin() {
-        int loginTime = loginRemainTime;
+        int loginTime = LOGIN_REMAIN_TIME;
         while (loginTime > 0) {
             System.out.print("관리자 비밀번호를 입력해주세요 : ");
             String inputPw = scanner.nextLine();
